@@ -94,7 +94,7 @@ shutil.rmtree(docsPath + "/docs/daily-maintenance/software")
 
 print("Generating PDF...")
 try:
-    subprocess.check_call("cd tech-guide && mkdocs build",shell=True)
+    subprocess.check_call("cd " + docsPath + " && mkdocs build",shell=True)
 
 except subprocess.CalledProcessError:
     print("Generation failed. Check the output above for more information.")
