@@ -11,6 +11,12 @@ except IndexError:
     print("Usage: export.py source_folder")
     exit()
 
+if not os.path.exists(docsPath):
+    raise FileNotFoundError("Sources folder not found.")
+
+if not os.path.exists(docsPath + "/mkdocs.yml"):
+    raise FileNotFoundError("MkDocs configuration file is missing.")
+
 configPath = docsPath + "/mkdocs.yml"
 softwarePath = docsPath+"/docs/daily-maintenance/software.md"
 operationsPath = docsPath + "/docs/daily-maintenance/operations.md"
@@ -51,12 +57,13 @@ newCfg['nav'][1]['日常维护'][1]['操作篇'] = "daily-maintenance/operations
 newCfg['copyright'] = "本手册所有内容均在 CC BY-SA 4.0 和 SATA 协议条款下提供。"
 newCfg['markdown_extensions'][7]['toc'] = {'permalink': 'true'}
 
-if os.getenv('ERROR_DEBUG') == "1":
-    newCfg['markdown_extensions'][6] = "114514"
+try:
+    del newCfg['edit_uri']
+    del newCfg['repo_url']
+    del newCfg['repo_name']
+except KeyError:
+    print("Some key-value pairs is missing. Maybe the configuration file has been modified?")
 
-del newCfg['edit_uri']
-del newCfg['repo_url']
-del newCfg['repo_name']
 newCfg['plugins'] = [{'mkpdfs': {'design': os.getcwd() + '/mkpdfs-style/report.css', 'company': '赣州三中学生会', 'author': '秘书处', 'toc_title': '目录'}}]
 
 yaml.dump(newCfg,tmp_cfg,Dumper=yaml.RoundTripDumper,default_flow_style=False,encoding='utf-8',allow_unicode=True)
@@ -64,32 +71,37 @@ operations.close()
 software.close()
 config.close()
 tmp_cfg.close()
+try:
+    os.remove(docsPath + "/docs/landing.md")
+except FileNotFoundError:
+    print("Landing page is missing, skipped.")
 os.remove(configPath)
-os.remove(docsPath + "/docs/landing.md")
 os.rename(docsPath + "/tmp.yml",configPath)
 print("New mkdocs configuration generated.")
 
-software_imgs_list=os.listdir(software_imgs)
-operations_imgs_list=os.listdir(operations_imgs)
-
-if not os.path.exists(docsPath + "/docs/daily-maintenance/images/"):
-    os.mkdir(docsPath + "/docs/daily-maintenance/images/")
-
-for i in range(len(os.listdir(software_imgs))):
-    path = os.path.join(software_imgs,software_imgs_list[i])
-    src = os.path.join(docsPath + "/docs/daily-maintenance/software/images",software_imgs_list[i])
-    dst = docsPath + "/docs/daily-maintenance/images/"
-    shutil.move(src,dst)
-
-for i in range(len(os.listdir(operations_imgs))):
-    path = os.path.join(operations_imgs,operations_imgs_list[i])
-    src = os.path.join(docsPath + "/docs/daily-maintenance/operations/images",operations_imgs_list[i])
-    dst = docsPath + "/docs/daily-maintenance/images/"
-    shutil.move(src,dst)
-
-print("Images have been merged.\nCleaning up...")
-shutil.rmtree(docsPath + "/docs/daily-maintenance/operations")
-shutil.rmtree(docsPath + "/docs/daily-maintenance/software")
+try:
+    software_imgs_list=os.listdir(software_imgs)
+    operations_imgs_list=os.listdir(operations_imgs)
+    if not os.path.exists(docsPath + "/docs/daily-maintenance/images/"):
+        os.mkdir(docsPath + "/docs/daily-maintenance/images/")
+    for i in range(len(os.listdir(software_imgs))):
+        path = os.path.join(software_imgs,software_imgs_list[i])
+        src = os.path.join(docsPath + "/docs/daily-maintenance/software/images",software_imgs_list[i])
+        dst = docsPath + "/docs/daily-maintenance/images/"
+        shutil.move(src,dst)
+    for i in range(len(os.listdir(operations_imgs))):
+        path = os.path.join(operations_imgs,operations_imgs_list[i])
+        src = os.path.join(docsPath + "/docs/daily-maintenance/operations/images",operations_imgs_list[i])
+        dst = docsPath + "/docs/daily-maintenance/images/"
+        shutil.move(src,dst)
+    print("Images have been merged.\nCleaning up...")
+except FileNotFoundError:
+    print("Old images folders not found, skipped.")
+try:
+    shutil.rmtree(docsPath + "/docs/daily-maintenance/operations")
+    shutil.rmtree(docsPath + "/docs/daily-maintenance/software")
+except FileNotFoundError:
+    print("Old documents folders not found, skipped.")
 
 print("Generating PDF...")
 try:
