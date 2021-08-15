@@ -5,29 +5,33 @@ import os
 import copy
 import subprocess
 
-exporter_cfg_path = sys.argv[1]
-exporter_cfg = open(exporter_cfg_path,mode='r',encoding='utf-8')
-loadedExporterConfig = yaml.load(exporter_cfg,Loader=yaml.RoundTripLoader)
+try:
+    docsPath = sys.argv[1]
+except IndexError:
+    print("Usage: export.py source_folder")
+    exit()
 
-configPath = loadedExporterConfig['mkdocs_config']
-softwarePath = loadedExporterConfig['generated_software_page']
-operationsPath = loadedExporterConfig['generated_operations_page']
-software_imgs = "./tech-guide/docs/daily-maintenance/software/images"
-operations_imgs = "./tech-guide/docs/daily-maintenance/operations/images"
 
-config = open(configPath,mode='r',encoding='utf-8')
-software = open(softwarePath,mode='w',encoding='utf-8')
-operations = open(operationsPath,mode='w',encoding='utf-8')
-loadedCfg = yaml.load(config,Loader=yaml.RoundTripLoader)
+configPath = docsPath + "/mkdocs.yml"
+softwarePath = docsPath+"/docs/daily-maintenance/software.md"
+operationsPath = docsPath + "/docs/daily-maintenance/operations.md"
+software_imgs = docsPath + "/docs/daily-maintenance/software/images"
+operations_imgs = docsPath + "/docs/daily-maintenance/operations/images"
+
+config = open(configPath,mode = 'r',encoding = 'utf-8')
+software = open(softwarePath,mode ='w',encoding = 'utf-8')
+operations = open(operationsPath,mode = 'w',encoding = 'utf-8')
+loadedCfg = yaml.load(config,Loader = yaml.RoundTripLoader)
 newCfg = copy.deepcopy(loadedCfg)
-tmp_cfg = open("./tech-guide/tmp.yml",mode='w',encoding='utf-8')
+tmp_cfg = open(docsPath + "/tmp.yml",mode = 'w',encoding = 'utf-8')
 
+print("Merging documents...")
 for i in range(len(loadedCfg['nav'])):
     tmp = list(loadedCfg['nav'][i].values())[0]
     for j in range(len(tmp)):
         if type(list(tmp[j].values())[0]) == yaml.comments.CommentedSeq and str(list(tmp[j].keys())[0]) == "软件篇":
             for k in range(len(list(tmp[j].values())[0])):
-                path = "./tech-guide/docs/"+str(list(list(tmp[j].values())[0][k].values())[0])
+                path = docsPath + "/docs/" + str(list(list(tmp[j].values())[0][k].values())[0])
                 print(path," has been merged to ",softwarePath)
                 file = open(path,mode='r',encoding='utf-8')
                 software.write("# 软件篇\n")
@@ -36,9 +40,9 @@ for i in range(len(loadedCfg['nav'])):
 
         if type(list(tmp[j].values())[0]) == yaml.comments.CommentedSeq and str(list(tmp[j].keys())[0]) == "操作篇":
             for k in range(len(list(tmp[j].values())[0])):
-                path = "./tech-guide/docs/"+str(list(list(tmp[j].values())[0][k].values())[0])
+                path = docsPath + "/docs/" + str(list(list(tmp[j].values())[0][k].values())[0])
                 print(path," has been merged to ",operationsPath)
-                file = open(path,mode='r',encoding='utf-8')
+                file = open(path,mode = 'r',encoding = 'utf-8')
                 operations.write("# 操作篇\n")
                 operations.write(file.read())
                 file.close()
@@ -62,31 +66,31 @@ software.close()
 config.close()
 tmp_cfg.close()
 os.remove(configPath)
-os.remove("./tech-guide/docs/landing.md")
-os.rename("./tech-guide/tmp.yml",configPath)
+os.remove(docsPath + "/docs/landing.md")
+os.rename(docsPath + "/tmp.yml",configPath)
 print("New mkdocs configuration generated.")
 
 software_imgs_list=os.listdir(software_imgs)
 operations_imgs_list=os.listdir(operations_imgs)
 
-if not os.path.exists("./tech-guide/docs/daily-maintenance/images/"):
-    os.mkdir("./tech-guide/docs/daily-maintenance/images/")
+if not os.path.exists(docsPath + "/docs/daily-maintenance/images/"):
+    os.mkdir(docsPath + "/docs/daily-maintenance/images/")
 
 for i in range(len(os.listdir(software_imgs))):
-    path=os.path.join(software_imgs,software_imgs_list[i])
-    src=os.path.join("./tech-guide/docs/daily-maintenance/software/images",software_imgs_list[i])
-    dst="./tech-guide/docs/daily-maintenance/images/"
+    path = os.path.join(software_imgs,software_imgs_list[i])
+    src = os.path.join(docsPath + "/docs/daily-maintenance/software/images",software_imgs_list[i])
+    dst = docsPath + "/docs/daily-maintenance/images/"
     shutil.move(src,dst)
 
 for i in range(len(os.listdir(operations_imgs))):
-    path=os.path.join(operations_imgs,operations_imgs_list[i])
-    src=os.path.join("./tech-guide/docs/daily-maintenance/operations/images",operations_imgs_list[i])
-    dst="./tech-guide/docs/daily-maintenance/images/"
+    path = os.path.join(operations_imgs,operations_imgs_list[i])
+    src = os.path.join(docsPath + "/docs/daily-maintenance/operations/images",operations_imgs_list[i])
+    dst = docsPath + "/docs/daily-maintenance/images/"
     shutil.move(src,dst)
 
 print("Images have been merged.\nCleaning up...")
-shutil.rmtree("./tech-guide/docs/daily-maintenance/operations")
-shutil.rmtree("./tech-guide/docs/daily-maintenance/software")
+shutil.rmtree(docsPath + "/docs/daily-maintenance/operations")
+shutil.rmtree(docsPath + "/docs/daily-maintenance/software")
 
 print("Generating PDF...")
 try:
@@ -96,6 +100,6 @@ except subprocess.CalledProcessError:
     print("Generation failed. Check the output above for more information.")
 
 else:
-    shutil.move("./tech-guide/site/pdf/combined.pdf","./result.pdf")
-    shutil.rmtree("./tech-guide/site")
+    shutil.move(docsPath + "/site/pdf/combined.pdf","./result.pdf")
+    shutil.rmtree(docsPath + "/site")
     print("All done. Get the generated PDF at ./result.pdf")

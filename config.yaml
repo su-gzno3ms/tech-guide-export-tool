@@ -1,3 +1,0 @@
-mkdocs_config: ./tech-guide/mkdocs.yml
-generated_software_page: ./tech-guide/docs/daily-maintenance/software.md
-generated_operations_page: ./tech-guide/docs/daily-maintenance/operations.md
