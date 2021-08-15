@@ -5,6 +5,8 @@ import os
 import copy
 import subprocess
 
+print(os.getcwd())
+print(os.path.exists(os.getcwd() + "..\\blog"))
 try:
     docsPath = sys.argv[1]
 except IndexError:
@@ -58,7 +60,7 @@ if os.getenv('ERROR_DEBUG') == "1":
 del newCfg['edit_uri']
 del newCfg['repo_url']
 del newCfg['repo_name']
-newCfg['plugins'] = [{'mkpdfs': {'design': '../mkpdfs-style/report.css', 'company': '赣州三中学生会', 'author': '秘书处', 'toc_title': '目录'}}]
+newCfg['plugins'] = [{'mkpdfs': {'design': os.getcwd()+'/mkpdfs-style/report.css', 'company': '赣州三中学生会', 'author': '秘书处', 'toc_title': '目录'}}]
 
 yaml.dump(newCfg,tmp_cfg,Dumper=yaml.RoundTripDumper,default_flow_style=False,encoding='utf-8',allow_unicode=True)
 operations.close()
