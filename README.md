@@ -13,7 +13,10 @@
 
 然后，在终端中执行 `python3 export.py path/to/tech-guide`，（参数 `path/to/tech-guide` 需替换为内容仓库的路径）即可开始导出。得到的文件为仓库根目录下的 `result.pdf`.（Windows 用户可能需要将 `python3` 替换成 `python`）
 
-# 授权
+# 版权
+本项目使用 MIT 协议。在分发，重用本项目的任何部分时，都请遵循该协议。
+
+# 鸣谢
 - [MkDocs](https://www.mkdocs.org/), 使用 2-clause BSD 协议授权。
 - [MkPDFs for MkDocs](https://comwes.github.io/mkpdfs-mkdocs-plugin/), 使用 GPL 3.0 协议授权。
 - [思源宋体](https://source.typekit.com/source-han-serif/cn/)，使用 SIL 协议授权。
