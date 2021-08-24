@@ -4,7 +4,7 @@
 首先请安装好以下软件：
 
 - Python 3
-- pip 3
+- pip3
 - GTK+（对于 Windows 用户，请使用 [GTK+ for Windows Runtime Environment Installer](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases)
 
 然后 clone 本仓库，以及 [维护手册的内容仓库](https://github.com/su-gzno3ms/tech-guide) 。

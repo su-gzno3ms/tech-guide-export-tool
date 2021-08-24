@@ -37,7 +37,7 @@ for i in range(len(loadedCfg['nav'])):
         if type(list(tmp[j].values())[0]) == yaml.comments.CommentedSeq and str(list(tmp[j].keys())[0]) == "软件篇":
             for k in range(len(list(tmp[j].values())[0])):
                 path = docsPath + "/docs/" + str(list(list(tmp[j].values())[0][k].values())[0])
-                print(path," has been merged to ",softwarePath)
+                print(path,"has been merged into",softwarePath)
                 file = open(path,mode='r',encoding='utf-8')
                 software.write("# 软件篇\n")
                 software.write(file.read())
@@ -46,7 +46,7 @@ for i in range(len(loadedCfg['nav'])):
         if type(list(tmp[j].values())[0]) == yaml.comments.CommentedSeq and str(list(tmp[j].keys())[0]) == "操作篇":
             for k in range(len(list(tmp[j].values())[0])):
                 path = docsPath + "/docs/" + str(list(list(tmp[j].values())[0][k].values())[0])
-                print(path," has been merged to ",operationsPath)
+                print(path,"has been merged into",operationsPath)
                 file = open(path,mode = 'r',encoding = 'utf-8')
                 operations.write("# 操作篇\n")
                 operations.write(file.read())
