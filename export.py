@@ -1,4 +1,5 @@
 from ruamel import yaml
+from time import sleep
 import sys
 import shutil
 import os
@@ -24,33 +25,39 @@ software_imgs = docsPath + "/docs/daily-maintenance/software/images"
 operations_imgs = docsPath + "/docs/daily-maintenance/operations/images"
 
 config = open(configPath,mode = 'r',encoding = 'utf-8')
-software = open(softwarePath,mode ='w',encoding = 'utf-8')
-operations = open(operationsPath,mode = 'w',encoding = 'utf-8')
 loadedCfg = yaml.load(config,Loader = yaml.RoundTripLoader)
 newCfg = copy.deepcopy(loadedCfg)
 tmp_cfg = open(docsPath + "/tmp.yml",mode = 'w',encoding = 'utf-8')
 
-print("Merging documents...")
-for i in range(len(loadedCfg['nav'])):
-    tmp = list(loadedCfg['nav'][i].values())[0]
-    for j in range(len(tmp)):
-        if type(list(tmp[j].values())[0]) == yaml.comments.CommentedSeq and str(list(tmp[j].keys())[0]) == "软件篇":
-            for k in range(len(list(tmp[j].values())[0])):
-                path = docsPath + "/docs/" + str(list(list(tmp[j].values())[0][k].values())[0])
-                print(path,"has been merged into",softwarePath)
-                file = open(path,mode='r',encoding='utf-8')
-                software.write("# 软件篇\n")
-                software.write(file.read())
-                file.close()
+if os.path.exists(docsPath + "/docs/processed"):
+    print("Source documents have been processed, skipped processing.")
 
-        if type(list(tmp[j].values())[0]) == yaml.comments.CommentedSeq and str(list(tmp[j].keys())[0]) == "操作篇":
-            for k in range(len(list(tmp[j].values())[0])):
-                path = docsPath + "/docs/" + str(list(list(tmp[j].values())[0][k].values())[0])
-                print(path,"has been merged into",operationsPath)
-                file = open(path,mode = 'r',encoding = 'utf-8')
-                operations.write("# 操作篇\n")
-                operations.write(file.read())
-                file.close()
+else:
+    print("Merging documents...")
+    software = open(softwarePath,mode ='w',encoding = 'utf-8')
+    operations = open(operationsPath,mode = 'w',encoding = 'utf-8')
+    for i in range(len(loadedCfg['nav'])):
+        tmp = list(loadedCfg['nav'][i].values())[0]
+        for j in range(len(tmp)):
+            if type(list(tmp[j].values())[0]) == yaml.comments.CommentedSeq and str(list(tmp[j].keys())[0]) == "软件篇":
+                for k in range(len(list(tmp[j].values())[0])):
+                    path = docsPath + "/docs/" + str(list(list(tmp[j].values())[0][k].values())[0])
+                    print(path,"has been merged into",softwarePath)
+                    file = open(path,mode='r',encoding='utf-8')
+                    software.write("# 软件篇\n")
+                    software.write(file.read())
+                    file.close()
+
+            if type(list(tmp[j].values())[0]) == yaml.comments.CommentedSeq and str(list(tmp[j].keys())[0]) == "操作篇":
+                for k in range(len(list(tmp[j].values())[0])):
+                    path = docsPath + "/docs/" + str(list(list(tmp[j].values())[0][k].values())[0])
+                    print(path,"has been merged into",operationsPath)
+                    file = open(path,mode = 'r',encoding = 'utf-8')
+                    operations.write("# 操作篇\n")
+                    operations.write(file.read())
+                    file.close()
+    operations.close()
+    software.close()
 
 newCfg['nav'][1]['日常维护'][0]['软件篇'] = "daily-maintenance/software.md"
 newCfg['nav'][1]['日常维护'][1]['操作篇'] = "daily-maintenance/operations.md"
@@ -67,8 +74,6 @@ except KeyError:
 newCfg['plugins'] = [{'mkpdfs': {'design': os.getcwd() + '/mkpdfs-style/report.css', 'company': '赣州三中学生会', 'author': '秘书处', 'toc_title': '目录'}}]
 
 yaml.dump(newCfg,tmp_cfg,Dumper=yaml.RoundTripDumper,default_flow_style=False,encoding='utf-8',allow_unicode=True)
-operations.close()
-software.close()
 config.close()
 tmp_cfg.close()
 try:
@@ -102,6 +107,7 @@ try:
     shutil.rmtree(docsPath + "/docs/daily-maintenance/software")
 except FileNotFoundError:
     print("Old documents folders not found, skipped.")
+open(docsPath + "/docs/processed",mode='w')
 
 print("Generating PDF...")
 try:
@@ -111,6 +117,32 @@ except subprocess.CalledProcessError:
     print("Generation failed. Check the output above for more information.")
 
 else:
+    try:
+        os.remove("./result.pdf")
+    except PermissionError:
+        print("The old result.pdf file is exist and cannot be overwriten. Check whether this file is in use, delete it and try again.\nAfter the file has been deleted, the generation process will continue.")
+        continue_flag = 0
+        while(not continue_flag):
+            sleep(1)
+            if(not os.path.exists("./result.pdf")):
+                continue_flag = 1
     shutil.move(docsPath + "/site/pdf/combined.pdf","./result.pdf")
     shutil.rmtree(docsPath + "/site")
-    print("All done. Get the generated PDF at ./result.pdf")
+    exit = 0
+    while(not exit):
+        rm_source = input("All done. Get the generated PDF at ./result.pdf\nWould you like to delete sources folder? (y/n)")
+        if(rm_source == "y"):
+            import stat
+            for root, dirs, files in os.walk(docsPath, topdown=False):
+                for name in files:
+                    filename = os.path.join(root, name)
+                    os.chmod(filename, stat.S_IWUSR)
+                    os.remove(filename)
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir(docsPath)
+            exit = 1
+        elif(rm_source == "n"):
+            exit = 1
+        else:
+            print("Wrong opinion.")
