@@ -119,6 +119,8 @@ except subprocess.CalledProcessError:
 else:
     try:
         os.remove("./result.pdf")
+    except FileNotFoundError:
+        pass
     except PermissionError:
         print("The old result.pdf file is exist and cannot be overwriten. Check whether this file is in use, delete it and try again.\nAfter the file has been deleted, the generation process will continue.")
         continue_flag = 0
